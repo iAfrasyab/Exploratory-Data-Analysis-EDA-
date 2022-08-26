@@ -1,0 +1,115 @@
+---
+title: "Exploratory Data Analysis (EDA)"
+author: "Afrasyab Khan"
+date: "4/11/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+##Loading Packages
+library(plotly)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+```
+
+```{r}
+##Reading dataset
+EUSuperstore <- read_excel("EUSuperstore.xls")
+summary(EUSuperstore)
+```
+Here we imported the dataset of EUSuperstore into R for analysis.
+
+
+```{r}
+##Data preparation and Cleaning
+EUSuperstore |> 
+  janitor::clean_names()
+#any Null values
+is.null(EUSuperstore)
+View(EUSuperstore)
+```
+
+
+```{r}
+##Visualization
+#Let's analyze patterns in our data_set
+
+#First we will look into Sales vs Quantity
+#Sales vs Quantity
+ggplot(data = EUSuperstore, aes(x = `Ship Mode`, y = Sales, fill = `Ship Mode`)) +
+  geom_bar(stat = "identity")
+```
+In the mentioned graph, we see the following a pattern that most of the sales 
+have been triggered by the standard class of shipment mode.
+
+```{r}
+#Sales vs Profit
+ggplot(data = EUSuperstore, aes(x = Sales, y = Profit, color =`Ship Mode`)) + geom_point()
+```
+And hence, obviously we see more profits/loss have been availed from the standard shipment class.
+But, there are not higher range profits seen this feature.So we will look into the sales vs profit pattern.
+
+```{r}
+##Sales vs Discount
+ggplot() + geom_point(data = EUSuperstore, aes(x = Discount, y = Sales, color = `Ship Mode`))
+```
+Here we will see that how Sales are affected if discounts are offered.
+And it is It is evident from the above graph that discounts attract more sales. But, discounts attract mostly the Standard Class shipment. Same-day shipment mode receive the least discount offers.
+
+```{r}
+##Profits vs Discount
+#Let's see whether profits have been triggered if discounts have been redeemed.
+ggplot() + geom_bar(data = EUSuperstore, aes(x = Discount, y = Profit, fill = `Ship Mode`), stat = "identity")
+```
+So, we see clearly, that more discounts have been offered and redeemed, the lesser profits the segments have been achieved. Products with No discounts show a high range of profits but as 
+the discount range increases, we only see more and more loss with hardly any profit.
+
+```{r}
+##Let us see if this is the case with other segments
+ggplot() + geom_bar(data = EUSuperstore, aes(x = `Sub-Category`, y = Profit, fill = Region), stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+```{r}
+EUSuperstore |>
+  group_by(Region, `Sub-Category`) |>
+  summarise(total_sales = sum(Sales)) -> plot
+```
+
+```{r}
+plot |>
+  pivot_longer(Region,
+               names_to = "key",
+               values_to = "value") -> up_plot
+ggplot(data = up_plot, aes(x = `Sub-Category`, y = total_sales, fill = value)) +
+  geom_col(position = "dodge") +
+  theme(axis.text.x = element_text(angle = 45))
+```
+
+```{r}
+ggplot() + geom_bar(data = EUSuperstore, aes(x = Category, y = Sales, fill = Region), stat = "identity") + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+```{r}
+ggplot() + geom_bar(data = EUSuperstore, aes(x = Category, y = Profit, fill = Region), stat = "identity") + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+```{r}
+ggplot() + geom_col(data = EUSuperstore, aes(x = Sales, y = Profit, color = Category))
+```
+
+```{r}
+EUSuperstore |>
+  group_by(Region) |>
+  summarise(total_sales = sum(Sales)) -> pplot
+pie(pplot$total_sales, labels = pplot$Region)
+```
+
+##Conclusion
+Same day shipment if receives more discounts can trigger sales/profits. Discounts should be based on the Sales and should not increase a particular range otherwise unnecessary discounts with low sales can witness huge losses Binders and Machines industry should be focused upon more so as to strengthen these weakened industry areas. Office Supplies and the Furniture industries do not seem to boom in the Central Region.
+
